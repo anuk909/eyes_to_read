@@ -1,8 +1,10 @@
 
-
 export default function HomePage() {
-    return <>
-    <form action="/action_page.php">
+    return <div style={{textAlign: "center"}}>
+    <h1>Eyes To See</h1>
+    <br />
+    <br />
+    <form>
     <label htmlFor="username">Username: </label>
     <input type="text" id="username" name="username" />
     <br />
@@ -13,5 +15,5 @@ export default function HomePage() {
     <br />
     <input type="submit" defaultValue="Submit" />
     </form>
-    </>
+    </div>
 }
