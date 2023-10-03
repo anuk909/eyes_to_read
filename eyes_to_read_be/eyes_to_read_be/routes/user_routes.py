@@ -82,7 +82,8 @@ async def get_users(limit: int = 10, skip: int = 0):
 
 
 @user_router.get("/{user_id}", response_model=User)
-async def get_user(user_id: ObjectId):
+async def get_user(user_id: str):
+    user_id = ObjectId(user_id)
     user = users_collection.find_one({"_id": user_id})
     if not user:
         raise HTTPException(404, "User not found")
@@ -101,7 +102,8 @@ async def create_user(user: User):
 
 
 @user_router.put("/{user_id}")
-async def update_user(user_id: ObjectId, user: User):
+async def update_user(user_id: str, user: User):
+    user_id = ObjectId(user_id)
     # Check if the user exists
     existing_user = users_collection.find_one({"_id": user_id})
     if not existing_user:
