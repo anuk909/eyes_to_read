@@ -3,11 +3,9 @@
 from eyes_to_read_be.common.config import MONGO_URI
 from eyes_to_read_be.common.hash import Hash
 from fastapi import APIRouter, FastAPI, HTTPException, Depends, Request, status
-from eyes_to_read_be.common.oauth import get_current_user
 from eyes_to_read_be.common.jwttoken import create_access_token
-from eyes_to_read_be.common.models import User, Login, Token, TokenData
+from eyes_to_read_be.common.models import User
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient
 
 user_router = APIRouter(prefix="/users")
