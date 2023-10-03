@@ -13,7 +13,7 @@ db = client["eyes_to_see_db"]
 users_collection = db["users"]
 
 
-@user_router.post()
+@user_router.post("")
 async def add_user(user: User):
     # Check if the user exists
     existing_user = users_collection.find_one({"name": user.name})
@@ -31,7 +31,7 @@ async def add_user(user: User):
 @user_router.put("/{user_id}")
 async def update_user(user_id: str, user: User):
     # Check if the user exists
-    existing_user = users_collection.find_one({"_id": id})
+    existing_user = users_collection.find_one({"_id": user_id})
     if not existing_user:
         raise HTTPException(status_code=404, detail="User not found")
 
