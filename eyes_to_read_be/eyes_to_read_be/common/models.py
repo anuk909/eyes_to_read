@@ -1,6 +1,7 @@
-from pydantic import BaseModel
+from pydantic.dataclasses import dataclass
 
 
-class User(BaseModel):  
-    name: str
-    password: str
+@dataclass
+class User:
+    username: str
+    password_hash: str

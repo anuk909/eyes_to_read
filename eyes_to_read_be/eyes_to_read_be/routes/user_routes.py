@@ -13,8 +13,28 @@ client = MongoClient(MONGO_URI)
 db = client["eyes_to_see_db"]
 users_collection = db["users"]
 
+
+@user_router.get("/all")
+async def get_users() -> list[User]:
+    users_data = users_collection.find()
+    return [
+        User(user_data["username"], user_data["password_hash"])
+        for user_data in users_data
+        if "username" and "password_hash" in user_data.keys()
+    ]
+
+
+@user_router.get("/login")
+async def login(user: User):
+    user_data = users_collection.find_one({"username": user.username})
+    if user_data and user_data["password_hash"] == user.password_hash:
+        return {"message": "Login successful"}
+    else:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+
+
 @user_router.get("/{user_id}")
-async def get_user(user_id: str):
+async def get_user(user_id: str) -> User:
     try:
         # Convert the user_id string to a MongoDB ObjectId
         user_object_id = ObjectId(user_id)
@@ -27,19 +47,20 @@ async def get_user(user_id: str):
     if not user_data:
         raise HTTPException(status_code=404, detail="User not found")
 
-    return user_data
+    return User(user_data["username"], user_data["password_hash"])
+
 
 @user_router.post("")
 async def add_user(user: User):
     # Check if the user exists
-    existing_user = users_collection.find_one({"name": user.name})
+    existing_user = users_collection.find_one({"username": user.username})
     if existing_user:
         raise HTTPException(
             status_code=400, detail="A user with this name already exists."
         )
 
     # Add user
-    users_collection.insert_one(user.model_dump)
+    users_collection.insert_one(user.model_dump())
 
     return {"message": "User data updated successfully"}
 
@@ -52,7 +73,22 @@ async def update_user(user_id: str, user: User):
         raise HTTPException(status_code=404, detail="User not found")
 
     # Update user data
-    update_data = {"$set": {"username": user.username, "password": user.password}}
+    update_data = {
+        "$set": {"username": user.username, "password_hash": user.password_hash}
+    }
     users_collection.update_one({"_id": user.id}, update_data)
 
     return {"message": "User data updated successfully"}
+
+
+@user_router.delete("/{user_id}")
+async def delete_user(user_id: str):
+    # Check if the user exists
+    existing_user = users_collection.find_one({"_id": user_id})
+    if not existing_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Delete user
+    users_collection.delete_one({"_id": user_id})
+
+    return {"message": "User deleted successfully"}
