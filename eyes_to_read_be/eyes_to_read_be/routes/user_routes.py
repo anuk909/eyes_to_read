@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Body
 from pymongo import MongoClient
 from eyes_to_read_be.common.config import MONGO_URI
 from eyes_to_read_be.common.models import User
+from bson import ObjectId  # Required to work with MongoDB ObjectId
 import uuid
 
 user_router = APIRouter(prefix="/users")
@@ -12,8 +13,23 @@ client = MongoClient(MONGO_URI)
 db = client["eyes_to_see_db"]
 users_collection = db["users"]
 
+@user_router.get("/{user_id}")
+async def get_user(user_id: str):
+    try:
+        # Convert the user_id string to a MongoDB ObjectId
+        user_object_id = ObjectId(user_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid user_id format")
 
-@user_router.post()
+    # Query the MongoDB collection to find the user by ObjectId
+    user_data = users_collection.find_one({"_id": user_object_id})
+
+    if not user_data:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user_data
+
+@user_router.post("")
 async def add_user(user: User):
     # Check if the user exists
     existing_user = users_collection.find_one({"name": user.name})
@@ -31,7 +47,7 @@ async def add_user(user: User):
 @user_router.put("/{user_id}")
 async def update_user(user_id: str, user: User):
     # Check if the user exists
-    existing_user = users_collection.find_one({"_id": id})
+    existing_user = users_collection.find_one({"_id": user_id})
     if not existing_user:
         raise HTTPException(status_code=404, detail="User not found")
 
